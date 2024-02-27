@@ -2,16 +2,18 @@ import pybullet as pb
 import utils.entities as entities
 import csv
 
+from typing import Union
+
+
 class Husky():
     
     wheel_names = ['front_left_wheel', 'front_right_wheel', 'rear_left_wheel', 'rear_right_wheel']
+
     TO_CSV_SEPARATOR = '_'
 
     def __init__(self, id: int) -> None:
 
-
-        wheels_idx = [entities.find_joint_idx(name, id) for name in Husky.wheel_names]
-
+        self.wheels_idx = [entities.find_joint_idx(name, id) for name in Husky.wheel_names]
         self.info = {
             'id': id,
             'frame': 0,
@@ -27,12 +29,12 @@ class Husky():
                 'z': 0.0
             },
             'wheels': {
-                name: { 'idx': idx, 'torque': 0, 'vel': 0 } for name, idx in zip(Husky.wheel_names, wheels_idx)
+                name: { 'idx': idx, 'torque': 0, 'vel': 0 } for name, idx in zip(Husky.wheel_names, self.wheels_idx)
             },
         }
         self.history: list[dict] = []
         
-    def update(self):
+    def update(self) -> None:
 
         self.info['frame'] += 1
         self.info['time'] += pb.getPhysicsEngineParameters()['fixedTimeStep']
@@ -54,8 +56,37 @@ class Husky():
 
         self.history.append(Husky._linearize_register(self.info))
 
+    def set_velocity_to(
+            self, 
+            vel: Union[int, float, list[float]], 
+            forces: Union[int, float, list[float]]
+        ) -> None:
 
-    def to_csv(self, name: str = 'husky_info.csv'):
+        if isinstance(vel, (int, float)):
+            vel = [vel]*len(self.wheels_idx)
+
+        if isinstance(forces, (int, float)):
+            forces = [forces]*len(self.wheels_idx)
+
+        pb.setJointMotorControlArray(
+            bodyIndex=self.info['id'],
+            jointIndices=self.wheels_idx,
+            controlMode=pb.VELOCITY_CONTROL,
+            targetVelocities=vel,
+            forces=forces,
+        )
+    
+    def set_dynamics(self, links: list[str], **kwargs):
+
+        for link in links:
+            pb.changeDynamics(
+                bodyUniqueId=self.info['id'],
+                linkIndex=link,
+                **kwargs
+            )
+
+
+    def to_csv(self, name: str = 'husky_info.csv') -> None:
 
         with open(name, 'w', newline='') as f:
             writer = csv.DictWriter(f, self.history[0].keys())

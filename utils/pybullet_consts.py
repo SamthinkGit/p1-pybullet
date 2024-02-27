@@ -1,4 +1,3 @@
-
 class PBConsts:
 
     CONTINOUS_FREQUENCY = 1./240.
