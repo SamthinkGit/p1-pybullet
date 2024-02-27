@@ -11,7 +11,7 @@ def aling_to_ground(object_id: int, x: float = 0.0, y: float = 0.0, orientation:
         param orientation: Orientation of the entity in quaternion
     """
     aabb = pb.getAABB(object_id)
-    pb.resetBasePositionAndOrientation(object_id, [x, y, aabb[1][2]], orientation)
+    pb.resetBasePositionAndOrientation(object_id, [x, y, aabb[1][2] + 0.02], orientation)
     return None
 
 def find_joint_idx(joint_name: str, object_id: int) -> int:
@@ -38,6 +38,3 @@ def find_joint_idx(joint_name: str, object_id: int) -> int:
 def get_sample_path(name: str) -> str:
     root_dir = Path(__file__).resolve().parent.parent
     return str(root_dir / "samples" / name)
-
-    
-
