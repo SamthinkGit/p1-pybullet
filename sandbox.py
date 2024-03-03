@@ -2,7 +2,6 @@ from utils import entities
 from utils.pybullet_consts import PBConsts, CALIBRATION
 from utils.templates import Husky
 from utils.control import PID
-from icecream import ic
 from pprint import pprint
 
 import pybullet as pb

@@ -4,7 +4,6 @@ from utils.pybullet_consts import CALIBRATION
 import csv
 
 from utils.control import PID
-from icecream import ic
 from typing import Union
 
 

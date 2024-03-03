@@ -4,8 +4,6 @@ import numpy as np
 import csv
 import time
 
-from icecream import ic
-
 class PID:
 
     def __init__(self, Kp, Ki, Kd, setpoint, shift, umbral: float = CALIBRATION.UMBRAL):

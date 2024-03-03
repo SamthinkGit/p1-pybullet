@@ -1,7 +1,6 @@
 from utils.control import Analyzer, PID
 from utils.pybullet_consts import CALIBRATION
 from Fase4_bullet import main as fase4main
-from icecream import ic
 import pickle
 
 def main():
@@ -54,7 +53,6 @@ class I_GradientDescent:
 
     def step(self):
 
-        ic(self.i_history, self.score_history)
         self.score_history.append(test_and_check(self.p, self.i_history[-1]))
 
         di = self.i_history[-1] - self.i_history[-2]
@@ -62,8 +60,6 @@ class I_GradientDescent:
             di += self.learning_rate
         derivate = float((self.score_history[-1] - self.score_history[-2]) / di)
         new_i = self.i_history[-1] + derivate*self.learning_rate
-        ic(derivate)
-        ic(new_i)
 
         self.i_history.append(new_i)
         

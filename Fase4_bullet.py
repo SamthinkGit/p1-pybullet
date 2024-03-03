@@ -4,8 +4,6 @@ from utils.templates import Husky
 from utils.control import PID
 from sandbox import Modules
 
-from icecream import ic
-
 import argparse
 import pybullet as pb
 import pybullet_utils.bullet_client as bc

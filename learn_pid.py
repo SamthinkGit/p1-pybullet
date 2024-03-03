@@ -1,4 +1,3 @@
-from icecream import ic
 from utils.control import Analyzer
 from Fase4_bullet import main as fase4main
 from utils.pybullet_consts import CALIBRATION
@@ -38,7 +37,6 @@ def main():
             stop_val = idx
             break
             
-    ic(analyzer.X[:stop_val], analyzer.Y[:stop_val])
 
     top_x = analyzer.X[:stop_val]
     top_y = analyzer.Y[:stop_val]
