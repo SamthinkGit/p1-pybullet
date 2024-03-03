@@ -1,5 +1,13 @@
 class PBConsts:
 
     CONTINOUS_FREQUENCY = 1./240.
+    SLEEP_TIME = 1./60.
     GRAVITY = [0, 0, -9.8]
     DISTANCE_FREQUENCY = 0.01 # Meters
+
+class CALIBRATION:
+
+    VEL_SHIFT = 11.21
+    FORCE_SHIFT = 873.3
+    SAFE_START_FOR_PID = 0.70
+    UMBRAL = 1.35

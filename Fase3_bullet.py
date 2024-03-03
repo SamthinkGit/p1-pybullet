@@ -1,5 +1,5 @@
 from utils import entities
-from utils.pybullet_consts import PBConsts
+from utils.pybullet_consts import PBConsts, CALIBRATION
 from utils.templates import Husky
 
 import argparse
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     # Partsing optional arguments
     parser = argparse.ArgumentParser(description='Runs a simulation of the husky driving through a barrier')
     parser.add_argument('--mode', type=float, help='Select a mode for running', choices=[3.1, 3.2, 3.3], default=3.3)
-    parser.add_argument('--csv', type=str, help='Select the name for the output csv file.', default='Fase3.csv')
+    parser.add_argument('--csv', type=str, help='Select the name for the output csv file.', default='csv/Fase3.csv')
     args = parser.parse_args()
 
     # Starting GUI
@@ -37,7 +37,8 @@ if __name__ == '__main__':
 
     # Wrapping Husky
     husky = Husky(husky)
-    husky.set_velocity_to(vel=13, forces=25) 
+    husky.set_velocity_to(vel=CALIBRATION.VEL_SHIFT, forces=CALIBRATION.FORCE_SHIFT) 
+
 
     if args.mode >= 3.2:
         husky.set_dynamics(
@@ -49,7 +50,7 @@ if __name__ == '__main__':
 
     if args.mode == 3.3:
         stick = entities.find_joint_idx('base2stick', barrier)
-        pb.changeDynamics(barrier, stick, localInertiaDiagonal=[5.0, 5.0, 5.0])
+        pb.changeDynamics(barrier, stick, localInertiaDiagonal=[0.41]*3)
 
     # Note: Velocity has been settled to 13 
     # so the husky doesn't get blocked
@@ -66,12 +67,12 @@ if __name__ == '__main__':
                 time.sleep(PBConsts.CONTINOUS_FREQUENCY)
                 continue
 
+            husky.save()
             husky.update()
-            pass
 
     except KeyboardInterrupt as k:
         print("Interruption Received, Cleaning")
 
-    husky.to_csv(name=f"csv_output/{args.csv}")
+    husky.to_csv(name=args.csv)
     print("Program Stopped. Closing GUI")
     pb.disconnect()

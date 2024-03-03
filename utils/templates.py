@@ -1,7 +1,10 @@
 import pybullet as pb
 import utils.entities as entities
+from utils.pybullet_consts import CALIBRATION
 import csv
 
+from utils.control import PID
+from icecream import ic
 from typing import Union
 
 
@@ -11,9 +14,13 @@ class Husky():
 
     TO_CSV_SEPARATOR = '_'
 
+
     def __init__(self, id: int) -> None:
 
         self.wheels_idx = [entities.find_joint_idx(name, id) for name in Husky.wheel_names]
+        self.pid = None
+        self.forces = None
+        self.input_vel = None
         self.info = {
             'id': id,
             'frame': 0,
@@ -34,6 +41,16 @@ class Husky():
         }
         self.history: list[dict] = []
         
+    def set_pid(self, pid: PID, umbral: float = float('inf')):
+
+        self.pid = pid
+        self.umbral = umbral
+        self.info['Kp'] = pid.Kp
+        self.info['Ki'] = pid.Ki
+        self.info['Kd'] = pid.Kd
+        self.info['umbral'] = self.umbral
+        self.info['err'] = pid.previous_error
+
     def update(self) -> None:
 
         self.info['frame'] += 1
@@ -54,7 +71,23 @@ class Husky():
             wheel['vel'] = joint_state[1]
             wheel['torque'] = joint_state[3]
 
+        if self.pid is not None:
+            self.info['err'] = self.pid.previous_error
+            self.info['pid_out'] = self.pid.prev_output
+
+    def save(self):
         self.history.append(Husky._linearize_register(self.info))
+    
+    def auto_adjust(self):
+
+        assert self.forces is not None, "[Husky] Trying to auto-adjust husky without having settled forces"
+
+        adjust = self.pid.update(self.info['vel']['x'])
+        # [5 -> 15] (12)
+        # *2 
+        # [10 -> 30]
+        # Fuerzas: POR DEFECTO 25
+        self.set_velocity_to(vel=adjust, forces=CALIBRATION.FORCE_SHIFT) 
 
     def set_velocity_to(
             self, 
@@ -67,6 +100,9 @@ class Husky():
 
         if isinstance(forces, (int, float)):
             forces = [forces]*len(self.wheels_idx)
+
+        self.input_vel = vel
+        self.forces = forces
 
         pb.setJointMotorControlArray(
             bodyIndex=self.info['id'],
@@ -93,7 +129,6 @@ class Husky():
             writer.writeheader()
             for entry in self.history:
                 writer.writerow(entry)
-
 
     def _linearize_register(register: dict, parent_key='', sep='_') -> dict:
         # Thanks to @OphirCarmi for his implementation at:
